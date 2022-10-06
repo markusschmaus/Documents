@@ -27,7 +27,7 @@ class TensorTypeMeta(ABCMeta):
     _props: tuple[str, ...]
     # meta_prop: Props[DataTypeV_co] = "meta"
 
-    def subclass(cls, s: ShapeV, t: DataTypeV) -> "Type[TensorType[ShapeV, DataTypeV]]":
+    def subtype(cls, s: ShapeV, t: DataTypeV) -> "Type[TensorType[ShapeV, DataTypeV]]":
         key = (s, t)
         res: Type[TensorType[ShapeV, DataTypeV]]
         try:
@@ -69,11 +69,10 @@ class TensorTypeMeta(ABCMeta):
             for lit in shape_type.__args__  # type: ignore
         )
         dtype = dtype_type.__args__[0]  # type:ignore
-        print(shape, dtype)
-        return self.subclass(shape, dtype)  # type: ignore
+        return self.subtype(shape, dtype)  # type: ignore
 
     def new(cls, shape: ShapeV, dtype: DataTypeV) -> "TensorType[ShapeV, DataTypeV]":
-        return cls.subclass(shape, dtype)()
+        return cls.subtype(shape, dtype)()
 
     def props(cls):
         return tuple(
@@ -82,7 +81,7 @@ class TensorTypeMeta(ABCMeta):
         )
     # results in mypy error
     # def __call__(cls, shape: ShapeV, dtype: DataTypeTV) -> "TensorType[ShapeV, DataTypeTV]":
-    #     return cls.subclass(shape, dtype)()
+    #     return cls.subtype(shape, dtype)()
 
 
 class TensorType(Generic[ShapeV_co, DataTypeV_co], metaclass=TensorTypeMeta):
@@ -94,9 +93,9 @@ class TensorType(Generic[ShapeV_co, DataTypeV_co], metaclass=TensorTypeMeta):
 
 
 cls: Type[TensorType[tuple[L[2], L[5]], Type[np.float32]]] \
-    = TensorType.subclass((2, 5), np.float32)
+    = TensorType.subtype((2, 5), np.float32)
 
-assert cls == TensorType.subclass((2, 5), np.float32)
+assert cls == TensorType.subtype((2, 5), np.float32)
 
 assert issubclass(cls, TensorType)
 
@@ -117,7 +116,7 @@ y: TensorType[tuple[L[3], L[7]], Type[np.float64]] \
 cls2: Type[TensorType[tuple[L[2], L[5]], Type[np.float32]]] \
     = TensorType[tuple[L[2], L[5]], Type[np.float32]]
 
-assert cls2 == TensorType.subclass((2, 5), np.float32)
+assert cls2 == TensorType.subtype((2, 5), np.float32)
 
 
 # correctly raises mypy error:
@@ -126,4 +125,4 @@ cls3: Type[TensorType[tuple[L[2], L[5]], Type[np.float32]]] \
 
 # correctly raises mypy error:
 cls5: Type[TensorType[tuple[L[2], L[5]], Type[np.float32]]] \
-    = TensorType.subclass((5, 2), np.float32)
+    = TensorType.subtype((5, 2), np.float32)
